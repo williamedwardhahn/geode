@@ -1,0 +1,302 @@
+<!DOCTYPE html><html><body><h1>UNIQUE TEST 12345</h1><p>This should appear in admin preview!</p>
+<!-- AI PageMaker Pi Panel -->
+<div id="pi-panel-container">
+  <button id="pi-button" onclick="togglePiPanel()">&#960;</button>
+  <div id="pi-panel" class="pi-hidden">
+    <div id="pi-header">
+      <h2>AI PageMaker</h2>
+      <button onclick="togglePiPanel()" class="pi-close">&times;</button>
+    </div>
+    <div id="pi-content">
+      <div class="pi-section">
+        <label>Your Key</label>
+        <input type="password" id="pi-key" placeholder="Enter your key" />
+      </div>
+      <div class="pi-section">
+        <label>What do you want to create?</label>
+        <textarea id="pi-prompt" rows="3" placeholder="Describe your vision... e.g., 'Add a contact form with email and message fields' or 'Change colors to dark blue theme'"></textarea>
+      </div>
+      <div class="pi-buttons">
+        <button onclick="askAI()" id="pi-preview-btn" class="pi-btn-primary">
+          <span class="btn-text">Preview</span>
+          <span class="btn-loading" style="display:none;">Generating...</span>
+        </button>
+        <button onclick="publishPage()" id="pi-publish-btn" class="pi-btn-success">
+          <span class="btn-text">Publish</span>
+          <span class="btn-loading" style="display:none;">Publishing...</span>
+        </button>
+      </div>
+      <div class="pi-history-row">
+        <button onclick="toggleHistory()" id="pi-history-btn" class="pi-btn-secondary">
+          <span>&#8634; History</span>
+        </button>
+        <select id="pi-history-select" onchange="loadVersion(this.value)" style="display:none;">
+          <option value="">Select version to restore...</option>
+        </select>
+      </div>
+      <div id="pi-status"></div>
+      <div class="pi-section">
+        <div class="pi-section-header">
+          <label>HTML Editor</label>
+          <button onclick="copyHtml()" class="pi-small-btn">Copy</button>
+        </div>
+        <textarea id="pi-editor" rows="12" spellcheck="false"></textarea>
+      </div>
+      <div class="pi-section">
+        <label>Live Preview</label>
+        <iframe id="pi-preview-frame"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+<style>
+  #pi-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5);
+    z-index: 9998;
+  }
+  #pi-button:hover { opacity: 1 !important; transform: scale(1.1) rotate(10deg); }
+  body:hover #pi-button { opacity: 0.3; }
+  #pi-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 440px;
+    max-width: 100vw;
+    height: 100vh;
+    background: linear-gradient(180deg, #fafafa 0%, #f0f0f0 100%);
+    box-shadow: -8px 0 40px rgba(0,0,0,0.15);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  #pi-panel.pi-hidden { transform: translateX(100%); }
+  #pi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+  #pi-header h2 { margin: 0; font-size: 20px; font-weight: 600; }
+  .pi-close { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 24px; cursor: pointer; width: 36px; height: 36px; border-radius: 8px; transition: background 0.2s; }
+  .pi-close:hover { background: rgba(255,255,255,0.3); }
+  #pi-content { flex: 1; overflow-y: auto; padding: 24px; }
+  .pi-section { margin-bottom: 20px; }
+  .pi-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .pi-section label { display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .pi-section-header label { margin-bottom: 0; }
+  .pi-small-btn { padding: 4px 12px; font-size: 11px; background: #e0e0e0; border: none; border-radius: 4px; cursor: pointer; transition: background 0.2s; }
+  .pi-small-btn:hover { background: #d0d0d0; }
+  .pi-section input, .pi-section textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.2s;
+    box-sizing: border-box;
+    font-family: inherit;
+    background: white;
+  }
+  .pi-section input:focus, .pi-section textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+  #pi-editor { font-family: 'SF Mono', 'Monaco', 'Menlo', monospace; font-size: 12px; line-height: 1.5; resize: vertical; }
+  .pi-buttons { display: flex; gap: 12px; margin-bottom: 20px; }
+  .pi-buttons button {
+    flex: 1;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .pi-btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+  .pi-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); }
+  .pi-btn-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
+  .pi-btn-success:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4); }
+  .pi-buttons button:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+  .pi-history-row { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+  .pi-btn-secondary {
+    padding: 10px 16px;
+    background: #f0f0f0;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #555;
+    transition: all 0.2s;
+  }
+  .pi-btn-secondary:hover { background: #e8e8e8; border-color: #667eea; color: #667eea; }
+  #pi-history-select {
+    flex: 1;
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 13px;
+    background: white;
+    cursor: pointer;
+  }
+  #pi-history-select:focus { outline: none; border-color: #667eea; }
+  #pi-status { padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 20px; display: none; font-weight: 500; }
+  #pi-status.pi-loading { display: block; background: linear-gradient(135deg, #e3f2fd, #bbdefb); color: #1565c0; }
+  #pi-status.pi-success { display: block; background: linear-gradient(135deg, #e8f5e9, #c8e6c9); color: #2e7d32; }
+  #pi-status.pi-error { display: block; background: linear-gradient(135deg, #ffebee, #ffcdd2); color: #c62828; }
+  #pi-preview-frame { width: 100%; height: 350px; border: 2px solid #e0e0e0; border-radius: 10px; background: white; }
+  @media (max-width: 480px) {
+    #pi-panel { width: 100vw; }
+    #pi-button { bottom: 16px; right: 16px; width: 50px; height: 50px; font-size: 24px; }
+  }
+</style>
+<script>
+  const PI_API_URL = 'https://geode-api-zkv5sxkk7q-uc.a.run.app';
+  document.addEventListener('DOMContentLoaded', function() {
+    const savedKey = localStorage.getItem('pi-maker-key');
+    if (savedKey) document.getElementById('pi-key').value = savedKey;
+    loadCurrentHtml();
+  });
+  function loadCurrentHtml() {
+    const html = document.documentElement.outerHTML;
+    const cleaned = html.replace(/<div id="pi-panel-container">[\s\S]*?<\/script>\s*<\/div>/, '');
+    document.getElementById('pi-editor').value = cleaned;
+    document.getElementById('pi-preview-frame').srcdoc = cleaned;
+  }
+  function togglePiPanel() { document.getElementById('pi-panel').classList.toggle('pi-hidden'); }
+  function setStatus(msg, type) {
+    const s = document.getElementById('pi-status');
+    s.textContent = msg;
+    s.className = 'pi-' + type;
+  }
+  function setButtonLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    btn.disabled = loading;
+    btn.querySelector('.btn-text').style.display = loading ? 'none' : 'inline';
+    btn.querySelector('.btn-loading').style.display = loading ? 'inline' : 'none';
+  }
+  function copyHtml() {
+    navigator.clipboard.writeText(document.getElementById('pi-editor').value);
+    setStatus('Copied to clipboard!', 'success');
+    setTimeout(() => document.getElementById('pi-status').style.display = 'none', 2000);
+  }
+  async function askAI() {
+    const key = document.getElementById('pi-key').value.trim();
+    const prompt = document.getElementById('pi-prompt').value.trim();
+    const html = document.getElementById('pi-editor').value;
+    if (!key) { setStatus('Please enter your key', 'error'); return; }
+    if (!prompt) { setStatus('Describe what you want to create', 'error'); return; }
+    localStorage.setItem('pi-maker-key', key);
+    setStatus('AI is generating your page...', 'loading');
+    setButtonLoading('pi-preview-btn', true);
+    try {
+      const res = await fetch(PI_API_URL + '/api/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, current_html: html, prompt })
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('pi-editor').value = data.html;
+        document.getElementById('pi-preview-frame').srcdoc = data.html;
+        setStatus('Preview ready! Review and click Publish when ready.', 'success');
+      } else {
+        setStatus(data.error || 'Generation failed', 'error');
+      }
+    } catch (e) {
+      setStatus('Network error: ' + e.message, 'error');
+    } finally {
+      setButtonLoading('pi-preview-btn', false);
+    }
+  }
+  async function publishPage() {
+    const key = document.getElementById('pi-key').value.trim();
+    const html = document.getElementById('pi-editor').value;
+    if (!key) { setStatus('Please enter your key', 'error'); return; }
+    if (!html.trim()) { setStatus('No HTML to publish', 'error'); return; }
+    localStorage.setItem('pi-maker-key', key);
+    setStatus('Publishing your page...', 'loading');
+    setButtonLoading('pi-publish-btn', true);
+    try {
+      const res = await fetch(PI_API_URL + '/api/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, html })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setStatus('Published! Refreshing...', 'success');
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        setStatus(data.error || 'Publish failed', 'error');
+      }
+    } catch (e) {
+      setStatus('Network error: ' + e.message, 'error');
+    } finally {
+      setButtonLoading('pi-publish-btn', false);
+    }
+  }
+  async function toggleHistory() {
+    const key = document.getElementById('pi-key').value.trim();
+    const select = document.getElementById('pi-history-select');
+    if (!key) { setStatus('Enter your key first', 'error'); return; }
+    if (select.style.display === 'none') {
+      setStatus('Loading history...', 'loading');
+      try {
+        const res = await fetch(PI_API_URL + '/api/history/' + key);
+        const data = await res.json();
+        if (data.success && data.versions.length > 0) {
+          select.innerHTML = '<option value="">Select version to restore...</option>';
+          data.versions.forEach(v => {
+            const date = new Date(v.timestamp).toLocaleString();
+            select.innerHTML += '<option value="' + v.index + '">' + date + '</option>';
+          });
+          select.style.display = 'block';
+          setStatus(data.count + ' versions available', 'success');
+        } else {
+          setStatus('No history yet. Publish first to create versions.', 'error');
+        }
+      } catch (e) {
+        setStatus('Failed to load history', 'error');
+      }
+    } else {
+      select.style.display = 'none';
+    }
+  }
+  async function loadVersion(index) {
+    if (index === '') return;
+    const key = document.getElementById('pi-key').value.trim();
+    setStatus('Loading version...', 'loading');
+    try {
+      const res = await fetch(PI_API_URL + '/api/history/' + key + '/' + index);
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('pi-editor').value = data.html;
+        document.getElementById('pi-preview-frame').srcdoc = data.html;
+        setStatus('Version restored! Review and Publish to make it live.', 'success');
+        document.getElementById('pi-history-select').style.display = 'none';
+      } else {
+        setStatus(data.error || 'Failed to load version', 'error');
+      }
+    } catch (e) {
+      setStatus('Network error: ' + e.message, 'error');
+    }
+  }
+</script>
+</body></html>
