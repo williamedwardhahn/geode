@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Fish</title>
+    <title>My Page</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -12,47 +13,32 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
         }
-        .container {
+        .welcome {
             text-align: center;
             padding: 60px 40px;
             background: white;
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
-            transition: transform 0.3s ease;
-        }
-        .container:hover {
-            transform: translateY(-10px);
+            max-width: 500px;
         }
         h1 { font-size: 32px; color: #1a1a2e; margin-bottom: 16px; }
         p { color: #666; line-height: 1.6; margin-bottom: 24px; }
-        .learn-more {
+        .hint {
             display: inline-block;
             padding: 12px 24px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border-radius: 12px;
             font-size: 14px;
-            text-decoration: none;
-            transition: background 0.3s ease;
-        }
-        .learn-more:hover {
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-        }
-        @media (max-width: 600px) {
-            h1 { font-size: 28px; }
-            p { font-size: 14px; }
-            .container { padding: 40px 20px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Discover the World of Fish</h1>
-        <p>Fish are a diverse group of animals that live in water and breathe through gills. They come in a wide variety of shapes, sizes, and colors. Fish are an important part of aquatic ecosystems and are a source of food for many animals, including humans.</p>
-        <a href="#" class="learn-more">Learn More</a>
+    <div class="welcome">
+        <h1>Your Page Awaits</h1>
+        <p>This is your blank canvas. Hover over the bottom-right corner and click the <strong>pi</strong> button to start creating with AI.</p>
+        <div class="hint">Hover bottom-right to begin</div>
     </div>
 
 <!-- AI PageMaker Pi Panel -->
@@ -355,4 +341,5 @@
     }
   }
 </script>
-</body></html>
+</body>
+</html>
